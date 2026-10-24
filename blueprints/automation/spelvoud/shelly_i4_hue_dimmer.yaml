@@ -1,0 +1,172 @@
+blueprint:
+  name: Shelly i4 – Hue lamp dimmen
+  description: >
+    Bedien een (Philips Hue) lamp met één drukknop op een Shelly i4
+    (Plus i4 / i4 Gen3 / i4 DC).
+
+    * **Kort drukken**: lamp aan/uit
+    * **Dubbel drukken**: volle helderheid
+    * **Ingedrukt houden**: dimmen; elke keer dat je opnieuw vasthoudt wisselt
+      de richting (feller ↔ donkerder). Is de lamp uit, dan begint hij altijd
+      met feller worden. Loslaten stopt het dimmen.
+
+    Vereist: de Shelly-integratie, en de ingang van de i4 ingesteld als
+    **Button** (drukknop), niet als Switch.
+  domain: automation
+  source_url: https://github.com/spelvoud/homeassistant/blob/main/blueprints/automation/spelvoud/shelly_i4_hue_dimmer.yaml
+  input:
+    button:
+      name: Shelly i4 knop
+      description: De event-entiteit van de ingang (bijv. event.shelly_i4_input_0).
+      selector:
+        entity:
+          filter:
+            - integration: shelly
+              domain: event
+    light:
+      name: Lamp
+      selector:
+        entity:
+          filter:
+            - domain: light
+    direction_helper:
+      name: Richting-helper (optioneel)
+      description: >
+        Een input_boolean die onthoudt welke kant er de vorige keer op gedimd
+        werd, zodat de richting per keer vasthouden wisselt. Zonder helper:
+        onder 50% wordt feller, daarboven wordt donkerder.
+      default: []
+      selector:
+        entity:
+          filter:
+            - domain: input_boolean
+    hold_delay:
+      name: Vasthoud-drempel
+      description: Hoe lang de knop ingedrukt moet zijn voordat het dimmen start.
+      default: 500
+      selector:
+        number:
+          min: 200
+          max: 1500
+          step: 50
+          unit_of_measurement: ms
+    step_pct:
+      name: Stapgrootte
+      default: 8
+      selector:
+        number:
+          min: 1
+          max: 25
+          unit_of_measurement: "%"
+    step_interval:
+      name: Tijd tussen stappen
+      description: >
+        De Hue bridge kan ongeveer 10 commando's per seconde aan; houd dit
+        rond 300–500 ms voor soepel dimmen.
+      default: 350
+      selector:
+        number:
+          min: 150
+          max: 1000
+          step: 50
+          unit_of_measurement: ms
+    min_brightness:
+      name: Minimale helderheid
+      description: Lager dan dit dimt hij niet (zodat de lamp niet uitgaat).
+      default: 3
+      selector:
+        number:
+          min: 1
+          max: 50
+          unit_of_measurement: "%"
+
+# 'restart' zorgt dat het loslaten van de knop (btn_up) de dim-loop afbreekt.
+mode: restart
+max_exceeded: silent
+
+triggers:
+  - trigger: state
+    entity_id: !input button
+    not_to:
+      - unavailable
+      - unknown
+
+variables:
+  light_entity: !input light
+  helper: !input direction_helper
+  has_helper: "{{ helper | string not in ['', '[]', 'None'] }}"
+  hold_delay: !input hold_delay
+  step_pct: !input step_pct
+  step_interval: !input step_interval
+  min_brightness: !input min_brightness
+  min_bri_255: "{{ (min_brightness * 2.55) | round(0) | int }}"
+  event_type: "{{ trigger.to_state.attributes.event_type | default('') }}"
+
+actions:
+  - choose:
+      - alias: Kort drukken – aan/uit
+        conditions: "{{ event_type == 'single_push' }}"
+        sequence:
+          - action: light.toggle
+            target:
+              entity_id: "{{ light_entity }}"
+
+      - alias: Dubbel drukken – volle helderheid
+        conditions: "{{ event_type == 'double_push' }}"
+        sequence:
+          - action: light.turn_on
+            target:
+              entity_id: "{{ light_entity }}"
+            data:
+              brightness_pct: 100
+
+      - alias: Ingedrukt houden – dimmen
+        conditions: "{{ event_type == 'btn_down' }}"
+        sequence:
+          # Wordt de knop binnen deze tijd losgelaten, dan breekt btn_up
+          # (via mode: restart) dit af en blijft het bij een korte druk.
+          - delay:
+              milliseconds: "{{ hold_delay }}"
+          - variables:
+              is_on: "{{ is_state(light_entity, 'on') }}"
+              bri: "{{ state_attr(light_entity, 'brightness') | int(0) if is_on else 0 }}"
+              up: >
+                {% if not is_on or bri <= min_bri_255 %}
+                  true
+                {% elif bri >= 254 %}
+                  false
+                {% elif has_helper %}
+                  {{ not is_state(helper, 'on') }}
+                {% else %}
+                  {{ bri < 128 }}
+                {% endif %}
+          - if: "{{ has_helper }}"
+            then:
+              - action: "input_boolean.turn_{{ 'on' if up else 'off' }}"
+                target:
+                  entity_id: "{{ helper }}"
+          - repeat:
+              sequence:
+                - variables:
+                    # Berekend vanaf de beginwaarde: de Hue-status loopt tijdens
+                    # een transition wat achter, dus niet steeds opnieuw uitlezen.
+                    # Naar beneden nooit onder de minimale helderheid.
+                    target_pct: >
+                      {% set start_pct = bri / 2.55 %}
+                      {% if up %}{{ [start_pct + repeat.index * step_pct, 100] | min | round(0) | int }}
+                      {% else %}{{ [start_pct - repeat.index * step_pct, min_brightness] | max | round(0) | int }}{% endif %}
+                - action: light.turn_on
+                  target:
+                    entity_id: "{{ light_entity }}"
+                  data:
+                    brightness_pct: "{{ target_pct }}"
+                    transition: "{{ step_interval / 1000 }}"
+                - delay:
+                    milliseconds: "{{ step_interval }}"
+              # Stop bij de grens, of als vangnet na 40 stappen (mocht btn_up
+              # ooit niet aankomen).
+              until: >
+                {% set pct = bri / 2.55 + (1 if up else -1) * repeat.index * step_pct %}
+                {{ repeat.index >= 40
+                   or (up and pct >= 100)
+                   or (not up and pct <= min_brightness) }}
