@@ -27,7 +27,35 @@
       border: 1px solid var(--border); border-radius: 16px; padding: 32px 24px;
       text-align: center;
     }
-    .code { font-size: 64px; font-weight: 700; letter-spacing: -2px; margin: 0; color: var(--accent); }
+    /* ---- Geanimeerd 404-logo: 4 [gloeilamp] 4 ---------------------- */
+    .logo { display: block; width: 100%; max-width: 260px; height: auto; margin: 0 auto 8px; overflow: visible; }
+    .logo .digit {
+      font: 700 96px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      fill: var(--accent); text-anchor: middle;
+      animation: bob 3s ease-in-out infinite;
+    }
+    .logo .digit.right { animation-delay: -1.5s; }
+    .logo .cord { stroke: var(--muted); stroke-width: 2; }
+    .logo .socket { fill: var(--muted); }
+    .logo .glass { stroke: var(--muted); stroke-width: 2; animation: glass 4s linear infinite; }
+    .logo .filament { fill: none; stroke: #b26a00; stroke-width: 2; stroke-linecap: round; }
+    .logo .glow { fill: #ffd54f; filter: blur(10px); animation: glow 4s linear infinite; }
+    .logo .lamp { transform-origin: 120px 0; animation: swing 3s ease-in-out infinite; }
+
+    @keyframes bob   { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    @keyframes swing { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+    /* Flikkert als een kapotte lamp: aan, even uit, nog een keer knipperen, dan weer aan */
+    @keyframes glass {
+      0%, 40%, 46%, 50%, 54%, 100% { fill: #ffe082; }
+      42%, 44%, 52%                 { fill: var(--bg); }
+    }
+    @keyframes glow {
+      0%, 40%, 46%, 50%, 54%, 100% { opacity: .55; }
+      42%, 44%, 52%                 { opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .logo * { animation: none !important; }
+    }
     h1 { font-size: 20px; margin: 4px 0 8px; }
     p { margin: 8px 0; color: var(--muted); }
     code {
@@ -55,7 +83,18 @@
 </head>
 <body>
   <main>
-    <p class="code">404</p>
+    <svg class="logo" viewBox="0 0 240 125" role="img" aria-labelledby="logo-title">
+      <title id="logo-title">404</title>
+      <text class="digit" x="42" y="112">4</text>
+      <g class="lamp">
+        <line class="cord" x1="120" y1="0" x2="120" y2="38" />
+        <circle class="glow" cx="120" cy="80" r="34" />
+        <rect class="socket" x="111" y="36" width="18" height="16" rx="3" />
+        <path class="glass" d="M111 52 h18 v4 c0 6 19 10 19 28 a28 28 0 0 1 -56 0 c0 -18 19 -22 19 -28 z" />
+        <path class="filament" d="M114 56 v14 l3 8 l3 -6 l3 6 l3 -8 v-14" />
+      </g>
+      <text class="digit right" x="198" y="112">4</text>
+    </svg>
     <h1 id="title">Deze pagina bestaat niet</h1>
     <p>Je zocht naar <code id="path">…</code></p>
     <p id="message"></p>

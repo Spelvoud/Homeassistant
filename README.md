@@ -47,6 +47,9 @@ of de lamp op 100% / de minimale helderheid zit.
 
 [`www/404.html`](www/404.html) is een voorbeeld van een 404-pagina die zich aanpast aan de bezoeker:
 
+- geanimeerd logo: de 0 is een gloeilamp die aan zijn snoer slingert en af en toe
+  flikkert, terwijl de twee 4'en zachtjes op en neer deinen (pure SVG + CSS, geen
+  afbeeldingen; staat stil bij *verminderde beweging* in het besturingssysteem);
 - toont het pad dat werd opgevraagd (veilig via `textContent`);
 - stelt tot 3 bestaande pagina's voor op basis van gelijkenis (Levenshtein-afstand),
   bijv. `/energie` → *Energie* (`/energy`), `/logbok` → *Logboek*;
