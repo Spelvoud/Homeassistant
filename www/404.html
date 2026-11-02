@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Pagina niet gevonden</title>
+  <style>
+    :root {
+      --bg: #f5f7fa; --card: #ffffff; --text: #1c2430; --muted: #5b6675;
+      --accent: #03a9f4; --accent-text: #ffffff; --border: #dde3ea;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111418; --card: #1c2128; --text: #e6eaf0; --muted: #9aa5b4;
+        --accent: #29b6f6; --accent-text: #0b1a24; --border: #2c333d;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      padding: 16px; background: var(--bg); color: var(--text);
+      font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    main {
+      width: 100%; max-width: 520px; background: var(--card);
+      border: 1px solid var(--border); border-radius: 16px; padding: 32px 24px;
+      text-align: center;
+    }
+    /* ---- Geanimeerd 404-logo: 4 [gloeilamp] 4 ---------------------- */
+    .logo { display: block; width: 100%; max-width: 260px; height: auto; margin: 0 auto 8px; overflow: visible; }
+    .logo .digit {
+      font: 700 96px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      fill: var(--accent); text-anchor: middle;
+      animation: bob 3s ease-in-out infinite;
+    }
+    .logo .digit.right { animation-delay: -1.5s; }
+    .logo .cord { stroke: var(--muted); stroke-width: 2; }
+    .logo .socket { fill: var(--muted); }
+    .logo .glass { stroke: var(--muted); stroke-width: 2; animation: glass 4s linear infinite; }
+    .logo .filament { fill: none; stroke: #b26a00; stroke-width: 2; stroke-linecap: round; }
+    .logo .glow { fill: #ffd54f; filter: blur(10px); animation: glow 4s linear infinite; }
+    .logo .lamp { transform-origin: 120px 0; animation: swing 3s ease-in-out infinite; }
+
+    @keyframes bob   { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    @keyframes swing { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+    /* Flikkert als een kapotte lamp: aan, even uit, nog een keer knipperen, dan weer aan */
+    @keyframes glass {
+      0%, 40%, 46%, 50%, 54%, 100% { fill: #ffe082; }
+      42%, 44%, 52%                 { fill: var(--bg); }
+    }
+    @keyframes glow {
+      0%, 40%, 46%, 50%, 54%, 100% { opacity: .55; }
+      42%, 44%, 52%                 { opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .logo * { animation: none !important; }
+    }
+    h1 { font-size: 20px; margin: 4px 0 8px; }
+    p { margin: 8px 0; color: var(--muted); }
+    code {
+      display: inline-block; max-width: 100%; overflow-wrap: anywhere;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 6px; padding: 2px 8px; color: var(--text);
+    }
+    ul { list-style: none; padding: 0; margin: 16px 0; }
+    li a {
+      display: block; padding: 10px 12px; margin: 6px 0; border-radius: 10px;
+      border: 1px solid var(--border); color: var(--text); text-decoration: none;
+    }
+    li a:hover, li a:focus-visible { border-color: var(--accent); }
+    li small { color: var(--muted); }
+    .actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+    button, .btn {
+      font: inherit; cursor: pointer; border-radius: 10px; padding: 10px 16px;
+      border: 1px solid var(--border); background: transparent; color: var(--text);
+      text-decoration: none;
+    }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    #countdown { font-size: 14px; margin-top: 16px; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <svg class="logo" viewBox="0 0 240 125" role="img" aria-labelledby="logo-title">
+      <title id="logo-title">404</title>
+      <text class="digit" x="42" y="112">4</text>
+      <g class="lamp">
+        <line class="cord" x1="120" y1="0" x2="120" y2="38" />
+        <circle class="glow" cx="120" cy="80" r="34" />
+        <rect class="socket" x="111" y="36" width="18" height="16" rx="3" />
+        <path class="glass" d="M111 52 h18 v4 c0 6 19 10 19 28 a28 28 0 0 1 -56 0 c0 -18 19 -22 19 -28 z" />
+        <path class="filament" d="M114 56 v14 l3 8 l3 -6 l3 6 l3 -8 v-14" />
+      </g>
+      <text class="digit right" x="198" y="112">4</text>
+    </svg>
+    <h1 id="title">Deze pagina bestaat niet</h1>
+    <p>Je zocht naar <code id="path">…</code></p>
+    <p id="message"></p>
+
+    <section id="suggestions" hidden>
+      <p>Bedoelde je misschien:</p>
+      <ul id="suggestion-list"></ul>
+    </section>
+
+    <div class="actions">
+      <a class="btn primary" href="/">Naar het dashboard</a>
+      <button type="button" id="back">Ga terug</button>
+    </div>
+
+    <p id="countdown">
+      Je wordt over <strong id="seconds">15</strong> seconden doorgestuurd naar het dashboard.
+      <button type="button" id="cancel">Annuleren</button>
+    </p>
+  </main>
+
+  <script>
+    // ---- Configuratie ---------------------------------------------------
+    // Bekende pagina's waaruit suggesties worden gekozen. Pas aan naar wens.
+    const KNOWN_PAGES = [
+      { path: "/lovelace/0",      label: "Overzicht" },
+      { path: "/energy",          label: "Energie" },
+      { path: "/map",             label: "Kaart" },
+      { path: "/logbook",         label: "Logboek" },
+      { path: "/history",         label: "Geschiedenis" },
+      { path: "/media-browser",   label: "Media" },
+      { path: "/config/dashboard",    label: "Instellingen" },
+      { path: "/config/automation",   label: "Automatiseringen" },
+      { path: "/config/blueprint",    label: "Blueprints" },
+      { path: "/config/integrations", label: "Apparaten & diensten" },
+      { path: "/developer-tools/state", label: "Ontwikkelhulpmiddelen" },
+    ];
+    const REDIRECT_TO = "/";
+    const REDIRECT_AFTER_SECONDS = 15;   // 0 = niet automatisch doorsturen
+
+    // ---- Dynamische inhoud ---------------------------------------------
+    let path = location.pathname + location.search;
+    try { path = decodeURIComponent(path); } catch { /* ongeldige %-codering: toon ruw */ }
+    document.getElementById("path").textContent = path;   // textContent: geen XSS
+    document.title = `404 – ${location.pathname}`;
+
+    // Begroeting op basis van het tijdstip
+    const hour = new Date().getHours();
+    const greeting = hour < 6 ? "Goedenacht" : hour < 12 ? "Goedemorgen"
+                   : hour < 18 ? "Goedemiddag" : "Goedenavond";
+
+    // Willekeurige knipoog
+    const quips = [
+      "Misschien heeft een automatisering hem uitgezet.",
+      "Deze kamer staat niet op de plattegrond.",
+      "Zelfs de bewegingssensor ziet hier niemand.",
+      "De lamp brandt, maar er is niemand thuis.",
+    ];
+    document.getElementById("message").textContent =
+      `${greeting}! ${quips[Math.floor(Math.random() * quips.length)]}`;
+
+    // Suggesties: Levenshtein-afstand tussen het gevraagde pad en bekende pagina's
+    function distance(a, b) {
+      const dp = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+      for (let j = 1; j <= b.length; j++) dp[0][j] = j;
+      for (let i = 1; i <= a.length; i++)
+        for (let j = 1; j <= b.length; j++)
+          dp[i][j] = Math.min(
+            dp[i - 1][j] + 1,
+            dp[i][j - 1] + 1,
+            dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+          );
+      return dp[a.length][b.length];
+    }
+
+    const wanted = location.pathname.toLowerCase().replace(/\/+$/, "");
+    const lastSegment = wanted.split("/").pop();
+    const ranked = KNOWN_PAGES
+      .map(p => {
+        const target = p.path.toLowerCase();
+        const segment = target.split("/").pop();
+        // Laagste afstand op het hele pad óf alleen het laatste deel
+        const score = Math.min(distance(wanted, target), distance(lastSegment, segment) * 1.5);
+        const contains = lastSegment && (target.includes(lastSegment) || p.label.toLowerCase().includes(lastSegment));
+        return { ...p, score: contains ? 0 : score };
+      })
+      .filter(p => p.score <= Math.max(4, wanted.length * 0.5))
+      .sort((a, b) => a.score - b.score)
+      .slice(0, 3);
+
+    if (ranked.length) {
+      const list = document.getElementById("suggestion-list");
+      for (const p of ranked) {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = p.path;
+        a.append(p.label + " ");
+        const small = document.createElement("small");
+        small.textContent = p.path;
+        a.append(small);
+        li.append(a);
+        list.append(li);
+      }
+      document.getElementById("suggestions").hidden = false;
+    }
+
+    // Terug-knop alleen tonen als er geschiedenis is
+    const back = document.getElementById("back");
+    if (history.length > 1) back.addEventListener("click", () => history.back());
+    else back.hidden = true;
+
+    // Aftellen naar het dashboard (annuleerbaar; stopt ook bij interactie)
+    const countdown = document.getElementById("countdown");
+    if (REDIRECT_AFTER_SECONDS > 0) {
+      let left = REDIRECT_AFTER_SECONDS;
+      const secondsEl = document.getElementById("seconds");
+      secondsEl.textContent = left;
+      const timer = setInterval(() => {
+        left -= 1;
+        secondsEl.textContent = left;
+        if (left <= 0) { clearInterval(timer); location.replace(REDIRECT_TO); }
+      }, 1000);
+      const stop = () => { clearInterval(timer); countdown.hidden = true; };
+      document.getElementById("cancel").addEventListener("click", stop);
+      document.addEventListener("keydown", stop, { once: true });
+      document.getElementById("suggestions").addEventListener("pointerdown", stop);
+    } else {
+      countdown.hidden = true;
+    }
+  </script>
+</body>
+</html>
