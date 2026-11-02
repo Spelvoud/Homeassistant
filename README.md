@@ -42,3 +42,37 @@ De blueprint luistert naar de event-entiteit van de Shelly (`btn_down`, `btn_up`
 komt in die tijd `btn_up` binnen, dan wordt het dimmen afgebroken (`mode: restart`)
 en blijft het een gewone klik. Anders zet hij elke ~350 ms een stap, tot je loslaat
 of de lamp op 100% / de minimale helderheid zit.
+
+## Dynamische 404-pagina
+
+[`www/404.html`](www/404.html) is een voorbeeld van een 404-pagina die zich aanpast aan de bezoeker:
+
+- toont het pad dat werd opgevraagd (veilig via `textContent`);
+- stelt tot 3 bestaande pagina's voor op basis van gelijkenis (Levenshtein-afstand),
+  bijv. `/energie` → *Energie* (`/energy`), `/logbok` → *Logboek*;
+- begroeting op basis van het tijdstip en een willekeurige knipoog;
+- licht/donker thema volgens het systeem;
+- stuurt na 15 seconden door naar het dashboard (annuleerbaar, stopt bij interactie).
+
+Pas bovenaan het script `KNOWN_PAGES`, `REDIRECT_TO` en `REDIRECT_AFTER_SECONDS` aan.
+
+**Gebruiken**
+
+Home Assistant zelf laat geen eigen 404-pagina toe, maar via een reverse proxy wel.
+Kopieer het bestand naar bijv. `/var/www/errors/404.html` en voeg in nginx toe:
+
+```nginx
+server {
+    # ... bestaande Home Assistant proxy-config ...
+    proxy_intercept_errors on;
+    error_page 404 /404.html;
+
+    location = /404.html {
+        root /var/www/errors;
+        internal;
+    }
+}
+```
+
+De URL in de adresbalk blijft het oorspronkelijke (foute) pad, dus de pagina kan dat uitlezen.
+Wil je hem alleen bekijken? Zet hem in `config/www/` en open `http://<ha>:8123/local/404.html`.
